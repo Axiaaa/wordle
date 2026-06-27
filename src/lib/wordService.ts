@@ -69,19 +69,26 @@ export function getScore(guess: string, target: string): [string, string] {
 }
 
 
-export function UpdateUiWithScore(score: [string, string]): string[] {
+export function updateUiWithScore(score: [string, string]): string[] {
   const rowColors = [...score[1]].map((value) => {
     if (value === "2") return "#538d4e";
     if (value === "1") return "#b59f3b"
     return "#3a3a3c";
   });
 
+  return rowColors;
+}
+
+export function checkVictory(score: [string, string]): [string, string] {
   tries += 1;
   if (score[1] === "22222") {
-    setTimeout(() =>  alert(`Victory ! The word was ${getTodayWord()}`), 300);
-  } else if (tries === 6) {
-    setTimeout(() =>  alert(`You failed! The word was ${getTodayWord()}`), 250);
+    return  ["Victory !", "The word was "]
+  } else if (tries === 7) {
+    return  ["You lost !", "The word was "]
   }
+  return ["", ""]
+}
 
-  return rowColors;
+export function resetTries() {
+  tries = 0;
 }

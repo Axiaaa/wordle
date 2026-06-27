@@ -1,26 +1,41 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { loadWordsFile, getScore, UpdateUiWithScore, valid_words } from './wordService';
+    import { loadWordsFile, getScore, updateUiWithScore, valid_words, checkVictory, resetTries } from './wordService';
+    import { Button, Modal, P } from "flowbite-svelte";
+    import { slide } from "svelte/transition";
+    import './../app.css';
 
     let word = "";
     let currentInput = "";
     let input = "";
     let score: [string, string] = ["", ""];
-    
     let gridLetters = Array(30).fill("");
     let gridColors = Array(30).fill("");
     let currentRow = 0; 
-    
+    let modalContent = ["", ""];
     let inputRef: HTMLInputElement;
+    let isModalOpen = false; 
+
+    function toggleModal() {
+        isModalOpen = !isModalOpen;
+    }
+
+    function triggerFocus() {
+        if (inputRef) inputRef.focus();
+    }
 
     onMount(async () => {
         word = await loadWordsFile(); 
         triggerFocus();
     });
 
-    function triggerFocus() {
-        if (inputRef) inputRef.focus();
-    }
+    $: {
+        modalContent = checkVictory(score);
+        if (modalContent[0] != "") {
+            setTimeout(() => toggleModal(), 350);
+        }
+    } 
+
 
     $: {
         const startIdx = currentRow * 5;
@@ -31,6 +46,25 @@
             gridLetters = gridLetters;
         }
     }
+
+    async function resetGame() {
+        word = valid_words[Math.floor(Math.random() * valid_words.length) % valid_words.length];
+        
+        currentInput = "";
+        input = "";
+        
+        gridLetters = Array(30).fill("");
+        gridColors = Array(30).fill("");
+        currentRow = 0;
+
+        resetTries()
+        
+        score = ["", ""];
+        isModalOpen = false;
+        
+        setInterval(() => triggerFocus(), 20);
+    }
+
 
     function handleKeydown(event: KeyboardEvent) {
         if (event.key === 'Enter') {
@@ -47,7 +81,7 @@
             }
                 
             score = getScore(input, word);
-            const newColors = UpdateUiWithScore(score);
+            const newColors = updateUiWithScore(score);
             const startIdx = currentRow * 5;
 
             for (let i = 0; i < 5; i++) {
@@ -57,6 +91,7 @@
 
             currentRow += 1; 
             currentInput = "";
+            
             triggerFocus()
         }
     }
@@ -84,3 +119,20 @@
     class="hidden-input"
     autocomplete="off"
 />
+
+<Modal 
+    title={modalContent[0]}
+    bind:open={isModalOpen}
+    transition={slide} dismissable={false}
+    style="color: white;
+    font-style: normal ;
+    font-size: 1.5rem;
+    font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #3a3a3c"
+    >
+        <P style="font-size: 1rem">  { modalContent[1] + word.toUpperCase()}</P>
+        {#snippet footer()}
+            <Button style="color: #538d4e;" onclick={resetGame}>Play again with a random word!</Button>
+            <Button style="color: #b59f3b;" onclick={toggleModal}>:( </Button>
+        {/snippet}
+</Modal>
