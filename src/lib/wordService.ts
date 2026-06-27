@@ -22,9 +22,9 @@ export const loadWordsFile = async (): Promise<string> => {
     const text = await response.text();
     let split = text.split("\n");
     valid_words = split;
-    
+    var seed = 1337 ^ 0xDEADBEEF;
     for (let i = 0; i < 365; i++) {
-      words.set(i, split[Math.floor(Math.random() * split.length)]);
+      words.set(i, split[seed % split.length < 0 ? -(seed % split.length) : seed % split.length]);
     }
     return getTodayWord() || ""; 
   } catch (err) {
