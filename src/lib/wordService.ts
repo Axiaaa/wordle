@@ -78,7 +78,7 @@ export function UpdateUiWithScore(score: [string, string]): string[] {
 
   tries += 1;
   if (score[1] === "22222") {
-    alert(`Victory ! The word was ${getTodayWord()}`);
+    setTimeout(() =>  alert(`Victory ! The word was ${getTodayWord()}`), 300);
   } else if (tries === 6) {
     setTimeout(() =>  alert(`You failed! The word was ${getTodayWord()}`), 250);
   }
