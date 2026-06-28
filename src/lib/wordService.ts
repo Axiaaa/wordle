@@ -1,6 +1,7 @@
 export let words = new Map<number, string>(); 
 export let valid_words : string[] = [];
 export let tries = 0;
+let seed = 1337 ^ 0xDEADBEEF;
 
 function dayOfYear(date: Date): number {
   return Math.floor(
@@ -8,6 +9,14 @@ function dayOfYear(date: Date): number {
       Date.UTC(date.getFullYear(), 0, 0)) /
       86400000
   );
+}
+
+function nextRandom(): number { //mulberry32 algo
+  seed |= 0;
+  seed = (seed + 0x6D2B79F5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
 export const loadWordsFile = async (): Promise<string> => {
@@ -22,16 +31,18 @@ export const loadWordsFile = async (): Promise<string> => {
     const text = await response.text();
     let split = text.split("\n");
     valid_words = split;
-    var seed = 1337 ^ 0xDEADBEEF;
+
     for (let i = 0; i < 365; i++) {
-      words.set(i, split[seed % split.length < 0 ? -(seed % split.length) : seed % split.length]);
+      const index = Math.floor(nextRandom() * split.length);
+      words.set(i, split[index]);
     }
+
     return getTodayWord() || ""; 
-  } catch (err) {
-    console.error(err);
-    return "";
-  }
-};
+    } catch (err) {
+      console.error(err);
+      return "";
+    }
+  };
 
 export function getTodayWord() {
   if (words.size === 0) return "";
