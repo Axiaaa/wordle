@@ -33,7 +33,7 @@ export const loadWordsFile = async (): Promise<string> => {
     valid_words = split;
 
     for (let i = 0; i < 365; i++) {
-      const index = Math.floor(nextRandom() * split.length);
+      const index = Math.floor(nextRandom() % split.length);
       words.set(i, split[index]);
     }
 
